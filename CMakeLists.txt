@@ -6,4 +6,7 @@ project(muduo C CXX)
 
 include_directories(${CMAKE_SOURCE_DIR})
 
+set(EXECUTABLE_OUTPUT_PATH  ${CMAKE_SOURCE_DIR}/bin)
+set(LIBRARY_OUTPUT_PATH  ${CMAKE_SOURCE_DIR}/lib)
+
 add_subdirectory(muduo/base)
