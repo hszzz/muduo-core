@@ -1,6 +1,7 @@
 #include "inet_address.h"
 
 #include <strings.h>
+#include <string.h>
 
 namespace muduo_core {
 
@@ -18,8 +19,11 @@ std::string InetAddress::toIp() const {
 }
 
 std::string InetAddress::toIpPort() const {
-  // TODO
-  return toIp() + ":" +  std::to_string(toPort());
+  char buf[64] = {0};
+  ::inet_ntop(AF_INET, &addr_.sin_addr, buf, sizeof(buf));
+  size_t len = ::strlen(buf);
+  snprintf(buf + len, sizeof(buf) - len, ":%d", ::ntohs(addr_.sin_port));
+  return buf;
 }
 
 uint16_t InetAddress::toPort() const {
