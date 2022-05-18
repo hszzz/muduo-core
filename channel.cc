@@ -2,18 +2,23 @@
 
 #include <sys/epoll.h>
 
+#include "event_loop.h"
 #include "logger.h"
 
 namespace muduo_core {
+
+const int Channel::kNoneEvent = 0;
+const int Channel::kReadEvent = EPOLLIN | EPOLLPRI;
+const int Channel::kWriteEvent = EPOLLOUT;
 
 void Channel::tie(const std::shared_ptr<void>& obj) {
   tie_ = obj;
   tied_ = true;
 }
 
-void Channel::update() {}
+void Channel::update() { loop_->updateChannel(this); }
 
-void Channel::remove() {}
+void Channel::remove() { loop_->removeChannel(this); }
 
 void Channel::handleEvent(Timestamp receiveTime) {
   if (tied_) {
