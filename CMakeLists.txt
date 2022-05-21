@@ -14,3 +14,4 @@ add_library(muduo_core SHARED ${SRC_LIST})
 target_link_libraries(muduo_core pthread)
 
 add_subdirectory(tests)
+add_subdirectory(examples)
