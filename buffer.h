@@ -20,7 +20,7 @@ class Buffer {
   size_t writableBytes() const { return buffer_.size() - writerIndex_; }
   size_t prependableBytes() const { return readerIndex_; }
 
-  const char* peek() const { return begin(); }
+  const char* peek() const { return begin() + readerIndex_; }
 
   void retrieve(size_t len) {
     if (len < readableBytes()) {
@@ -49,6 +49,7 @@ class Buffer {
   }
 
   ssize_t readFd(int fd, int* saveErrno);
+  ssize_t writeFd(int fd, int* saveErrno);
 
   void ensureWritableBytes(size_t len) {
     if (writableBytes() < len) {

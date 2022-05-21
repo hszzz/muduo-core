@@ -1,5 +1,6 @@
 #include "buffer.h"
 
+#include <unistd.h>
 #include <sys/uio.h>
 
 namespace muduo_core {
@@ -27,6 +28,14 @@ ssize_t Buffer::readFd(int fd, int* saveErrno) {
     append(extrabuf, n - writable);
   }
 
+  return n;
+}
+
+ssize_t Buffer::writeFd(int fd, int* saveErrno) {
+  ssize_t n = ::write(fd, peek(), writableBytes());
+  if (n < 0) {
+    *saveErrno = errno;
+  }
   return n;
 }
 
