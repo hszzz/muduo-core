@@ -4,28 +4,31 @@
 #include <algorithm>
 #include <list>
 #include <memory>
+#include <mutex>
 #include <string>
 
 #include "noncopyable.h"
 #include "timestamp.h"
 
-#define LOG_FORMAT(level, format, ...)                                    \
-  do {                                                                    \
-    auto logger = muduo_core::Logger::instance();                         \
-    char buf[1024] = {0};                                                 \
-    ::snprintf(buf, 1024, format, ##__VA_ARGS__);                         \
-    logger->log(level,                                                    \
+#define LOG_FORMAT(level, format, ...)                                        \
+  do {                                                                        \
+    auto logger = muduo_core::Logger::instance();                             \
+    char buf[1024] = {0};                                                     \
+    ::snprintf(buf, 1024, format, ##__VA_ARGS__);                             \
+    logger->log(level,                                                        \
                 muduo_core::LogEvent(__FILE__, __LINE__, __FUNCTION__, buf)); \
   } while (0)
 
+#define LOG_DEBUG(format, ...) \
+  LOG_FORMAT(muduo_core::LogLevel::Level::DEBUG, format, ##__VA_ARGS__)
 #define LOG_INFO(format, ...) \
   LOG_FORMAT(muduo_core::LogLevel::Level::INFO, format, ##__VA_ARGS__)
+#define LOG_WARN(format, ...) \
+  LOG_FORMAT(muduo_core::LogLevel::Level::WARN, format, ##__VA_ARGS__)
 #define LOG_ERROR(format, ...) \
   LOG_FORMAT(muduo_core::LogLevel::Level::ERROR, format, ##__VA_ARGS__)
 #define LOG_FATAL(format, ...) \
   LOG_FORMAT(muduo_core::LogLevel::Level::FATAL, format, ##__VA_ARGS__)
-#define LOG_DEBUG(format, ...) \
-  LOG_FORMAT(muduo_core::LogLevel::Level::DEBUG, format, ##__VA_ARGS__)
 
 namespace muduo_core {
 
@@ -79,9 +82,13 @@ class Logger : noncopyable {
 
   static Logger* instance();
 
-  void addAppender(LogAppenderPtr appender) { appenders_.push_back(appender); }
+  void addAppender(LogAppenderPtr appender) {
+    std::unique_lock<std::mutex> lock(mutex_);
+    appenders_.push_back(appender);
+  }
 
   void removeAppender(LogAppenderPtr appender) {
+    std::unique_lock<std::mutex> lock(mutex_);
     for (auto it = appenders_.begin(); it != appenders_.end(); ++it) {
       if (*it == appender) {
         appenders_.erase(it);
@@ -114,6 +121,8 @@ class Logger : noncopyable {
 
   LogLevel::Level level_;
   LogAppenderPtr stdout_;
+
+  std::mutex mutex_;
   std::list<LogAppenderPtr> appenders_;
 };
 

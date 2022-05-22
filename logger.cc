@@ -70,6 +70,7 @@ void Logger::log(LogLevel::Level level, const LogEvent& event) {
       appender->append(level, event);
     }
   }
+  if (level == LogLevel::Level::FATAL) ::abort();
 }
 
 }  // namespace muduo_core
