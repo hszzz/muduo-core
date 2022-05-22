@@ -23,7 +23,7 @@ class Buffer {
   const char* peek() const { return begin() + readerIndex_; }
 
   void retrieve(size_t len) {
-    if (len < readableBytes()) {
+    if (len <= readableBytes()) {
       readerIndex_ += len;
     } else {
       retrieveAll();
