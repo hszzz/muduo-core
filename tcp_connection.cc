@@ -114,7 +114,8 @@ void TcpConnection::send(const void* message, int len) {
     if (loop_->isInLoopThread()) {
       sendInLoop(message, len);
     } else {
-      loop_->runInLoop(std::bind(&TcpConnection::sendInLoop, this, message, len));
+      loop_->runInLoop(
+          std::bind(&TcpConnection::sendInLoop, this, message, len));
     }
   }
 }
