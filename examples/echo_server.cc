@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "../buffer.h"
+#include "../logger.h"
 #include "../tcp_connection.h"
 #include "../tcp_server.h"
 
@@ -17,6 +18,7 @@ class EchoServer {
         std::bind(&EchoServer::onMessage, this, std::placeholders::_1,
                   std::placeholders::_2, std::placeholders::_3));
     server_.setThreadNum(4);
+    Logger::instance()->enableStdout(false);
   }
 
   void start() { server_.start(); }
@@ -24,9 +26,11 @@ class EchoServer {
  private:
   void onConnection(const TcpConnectionPtr& conn) {
     if (conn->connected()) {
-      std::cout << "new connection" << std::endl;
+      std::cout << "new connection: " << conn->peerAddress().toIpPort()
+                << std::endl;
     } else {
-      std::cout << "disconnection" << std::endl;
+      std::cout << "disconnection" << conn->peerAddress().toIpPort()
+                << std::endl;
     }
   }
 
