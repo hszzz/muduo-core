@@ -1,5 +1,6 @@
 #include "tcp_connection.h"
 
+#include <unistd.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -155,16 +156,19 @@ void TcpConnection::sendInLoop(const void* message, size_t len) {
   }
 
   if (!channel_->isWriting() && outputBuffer_.readableBytes() == 0) {
-    remaining = len - nwrote;
-    if (remaining == 0 && writeCompleteCallback_) {
-      loop_->queueInLoop(std::bind(writeCompleteCallback_, shared_from_this()));
-    }
-  } else {
-    nwrote = 0;
-    if (errno != EWOULDBLOCK) {
-      LOG_ERROR("TcpConnection::sendInLoop");
-      if (errno == EPIPE || errno == ECONNRESET) {
-        faultError = true;
+    nwrote = ::write(channel_->fd(), message, len);
+    if (nwrote >= 0) {
+      remaining = len - nwrote;
+      if (remaining == 0 && writeCompleteCallback_) {
+        loop_->queueInLoop(std::bind(writeCompleteCallback_, shared_from_this()));
+      }
+    } else {
+      nwrote = 0;
+      if (errno != EWOULDBLOCK) {
+        LOG_ERROR("write to fd ocurs error");
+        if (errno == EPIPE || errno == ECONNRESET) {
+          faultError = true;
+        }
       }
     }
   }
