@@ -1,2 +1,2 @@
 cmake -B build
-cmake --build build #-j4
+cmake --build build -j16
