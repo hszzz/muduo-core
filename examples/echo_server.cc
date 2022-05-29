@@ -18,7 +18,6 @@ class EchoServer {
         std::bind(&EchoServer::onMessage, this, std::placeholders::_1,
                   std::placeholders::_2, std::placeholders::_3));
     server_.setThreadNum(4);
-    Logger::instance()->enableStdout(false);
   }
 
   void start() { server_.start(); }
