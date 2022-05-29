@@ -3,6 +3,8 @@
 #include <chrono>
 #include <iostream>
 
+#include "current_thread.h"
+
 namespace muduo_core {
 
 const char* LogLevel::toString(LogLevel::Level level) {
@@ -48,13 +50,15 @@ LogLevel::Level LogLevel::fromString(const std::string& str) {
 
 std::string LogEvent::toString() const {
   char buf[1024] = {0};
-  ::snprintf(buf, sizeof(buf), " %s %s:%ld:%s -> %s",
-             timestamp_.toString().c_str(), file_, line_, func_, message_);
+  ::snprintf(buf, sizeof(buf), " %s %d %s:%ld:%s -> %s",
+             timestamp_.toString().c_str(), tid_, file_, line_, func_,
+             message_.c_str());
   return buf;
 }
 
-void LogConsoleAppender::append(LogLevel::Level level, const LogEvent& event) {
-  std::cout << LogLevel::toString(level) << event.toString() << std::endl;
+void LogConsoleAppender::append(LogLevel::Level level,
+                                LogEvent::LogEventPtr event) {
+  std::cout << LogLevel::toString(level) << event->toString() << std::endl;
 }
 
 Logger* Logger::instance() {
@@ -64,13 +68,37 @@ Logger* Logger::instance() {
 
 void Logger::setLevel(LogLevel::Level level) { level_ = level; }
 
-void Logger::log(LogLevel::Level level, const LogEvent& event) {
+void Logger::log(LogLevel::Level level, LogEvent::LogEventPtr event) {
   if (level > level_) {
+    std::unique_lock<std::mutex> lock(mutex_);
+    queue_.push({level, event});
+    cond_.notify_all();
+  }
+}
+
+void Logger::asyncLog() {
+  while (1) {
+    LogLevel::Level level;
+    LogEvent::LogEventPtr event = nullptr;
+
+    {
+      std::unique_lock<std::mutex> lock(mutex_);
+      while (queue_.empty()) cond_.wait(lock);
+      level = queue_.front().first;
+      event = queue_.front().second;
+      queue_.pop();
+    }
+
     for (const auto& appender : appenders_) {
       appender->append(level, event);
     }
+
+    if (level == LogLevel::Level::FATAL) ::abort();
+
+    if (stop_ == true && queue_.empty()) {
+      break;
+    }
   }
-  if (level == LogLevel::Level::FATAL) ::abort();
 }
 
 }  // namespace muduo_core
