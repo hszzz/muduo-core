@@ -6,4 +6,4 @@ This project retains only the core functionality of the muduo library.
 chmod +x build.sh
 ./build.sh
 ```
-Tanks to [muduo](https://github.com/chenshuo/muduo).
+Thanks to [muduo](https://github.com/chenshuo/muduo).
