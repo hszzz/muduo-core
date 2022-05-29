@@ -22,7 +22,7 @@ EPollPoller::EPollPoller(EventLoop* loop)
 
 Timestamp EPollPoller::poll(int timeoutMs, ChannelList* activateChannels) {
   LOG_INFO("function: %s, channel size: %ld", __FUNCTION__,
-           activateChannels->size());
+           channels_.size());
 
   int numEvents = ::epoll_wait(epollfd_, &*events_.begin(),
                                static_cast<int>(events_.size()), timeoutMs);
