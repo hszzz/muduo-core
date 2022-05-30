@@ -1,10 +1,13 @@
 #include "../logger.h"
 
+#include <atomic>
 #include <thread>
+
+std::atomic<int> counter(0);
 
 void producer() {
   while (1) {
-    LOG_INFO("messgae: %s", "test");
+    LOG_INFO("messgae: %s no%d", "test", counter++);
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
 }

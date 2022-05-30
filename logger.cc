@@ -7,6 +7,8 @@
 
 namespace muduo_core {
 
+#define LOG_LEVEL LogLevel::Level::ERROR
+
 const char* LogLevel::toString(LogLevel::Level level) {
   switch (level) {
 #define XX(name)       \
@@ -62,7 +64,7 @@ void LogConsoleAppender::append(LogLevel::Level level,
 }
 
 Logger* Logger::instance() {
-  static Logger logger;
+  static Logger logger(LOG_LEVEL);
   return &logger;
 }
 

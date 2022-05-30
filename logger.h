@@ -139,9 +139,9 @@ class Logger : noncopyable {
  private:
   using LogEventPair = std::pair<LogLevel::Level, LogEvent::LogEventPtr>;
 
-  Logger()
+  Logger(LogLevel::Level level)
       : stop_(false),
-        level_(LogLevel::Level::UNKNOWN),
+        level_(level),
         stdout_(new LogConsoleAppender),
         thread_(std::bind(&Logger::asyncLog, this), "LOGGER") {
     enableStdout(true);
